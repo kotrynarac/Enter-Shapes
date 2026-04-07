@@ -236,7 +236,7 @@ function flameField(x, y, cx, cy) {
 }
 
 function updateFlameScale() {
-  flameScaleDynamic = map(width, 320, 820, 0.75, 1, true);
+  flameScaleDynamic = map(width, 320, 820, 0.55, 1, true);
 
   FLAME_HEIGHT = 270 * flameScaleDynamic;
   FLAME_WIDTH = 105 * flameScaleDynamic;
