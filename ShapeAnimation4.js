@@ -176,8 +176,8 @@ function buildParticles() {
 
 // ---------------- DRAW LOOP ----------------
 function draw() {
-  // clear();
-   background("#262F3B");
+  clear();
+  //  background("#262F3B");
 
   let angle = TWO_PI * currentFrame / LOOP_FRAMES;
 
