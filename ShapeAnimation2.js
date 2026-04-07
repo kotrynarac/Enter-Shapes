@@ -22,7 +22,7 @@ const MIN_FONT_SIZE = 2.5;
 const MIN_PARTICLES = 1000;
 
 const BASE_COLOR = [255, 255, 255];
-const ACCENT_COLOR = [22, 106, 234];
+const ACCENT_COLOR = [255, 128, 68];
 const COLOR_RADIUS = 220;
 const BASE_ALPHA = 0.8 * 255;
 const SPOTLIGHT_ALPHA = 255;
