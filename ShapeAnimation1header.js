@@ -4,7 +4,7 @@ let font;
 let shapeImg;
 
 const BASE_DENSITY = 6;
-const HERO_SCALE = 0.85;
+const HERO_SCALE = 1;
 
 const LOOP_FRAMES = 360;
 const FPS = 60;
@@ -22,9 +22,6 @@ const ACCENT_COLOR = [206, 255, 126];
 const COLOR_RADIUS = 220;
 const BASE_ALPHA = 0.8 * 255;
 const SPOTLIGHT_ALPHA = 255;
-
-// Added fixed inner padding so content never reaches canvas edges
-const CANVAS_PADDING = 120;
 
 let canvasRef;
 let currentFrame = 0;
@@ -123,17 +120,29 @@ function preload() {
 
 
 // ---------------- HELPERS ----------------
-function getInnerBounds() {
-  const pad = min(CANVAS_PADDING, width * 0.25, height * 0.25);
+function getShapeTargetWidth() {
+  if (width < 820) {
+    return 140; // mobile
+  }
+  if (width < 1024) {
+    return 250; // tablet
+  }
+  return 350; // desktop
+}
+
+function getShapeBounds() {
+  const targetW = getShapeTargetWidth();
+  const scale = targetW / shapeImg.width;
+  const targetH = shapeImg.height * scale;
 
   return {
-    pad,
-    x: pad,
-    y: pad,
-    w: max(width - pad * 2, 1),
-    h: max(height - pad * 2, 1),
+    w: targetW,
+    h: targetH,
+    x: (width - targetW) * 0.5,
+    y: (height - targetH) * 0.5,
     cx: width * 0.5,
-    cy: height * 0.5
+    cy: height * 0.5,
+    scale
   };
 }
 
@@ -165,7 +174,7 @@ function buildParticles() {
   const codePoints = generateCodePoints();
   shuffle(shapePoints, true);
 
-  const bounds = getInnerBounds();
+  const bounds = getShapeBounds();
   const cx = bounds.cx;
   const cy = bounds.cy;
 
@@ -194,9 +203,9 @@ function buildParticles() {
 function draw() {
   clear();
 
-  const bounds = getInnerBounds();
+  const bounds = getShapeBounds();
   let angle = TWO_PI * currentFrame / LOOP_FRAMES;
-  let orbitRadius = min(bounds.w, bounds.h) * 0.32 * currentShapeScale;
+  let orbitRadius = min(bounds.w, bounds.h) * 0.32;
 
   let spotX = bounds.cx + cos(angle) * orbitRadius;
   let spotY = bounds.cy + sin(angle) * orbitRadius;
@@ -237,17 +246,14 @@ function extractPoints(img) {
 
   img.loadPixels();
 
-  const bounds = getInnerBounds();
-
-  currentShapeScale =
-    min(bounds.w / img.width, bounds.h / img.height) * HERO_SCALE;
+  const bounds = getShapeBounds();
+  currentShapeScale = bounds.scale * HERO_SCALE;
 
   const scale = currentShapeScale;
+  const ox = bounds.x;
+  const oy = bounds.y;
 
-  const ox = bounds.x + (bounds.w - img.width * scale) * 0.5;
-  const oy = bounds.y + (bounds.h - img.height * scale) * 0.5;
-
-  let adaptiveDensity = BASE_DENSITY * currentShapeScale;
+  let adaptiveDensity = BASE_DENSITY;
   adaptiveDensity = constrain(adaptiveDensity, 1.2, BASE_DENSITY);
 
   for (let y = 0; y < img.height; y += adaptiveDensity) {
@@ -270,12 +276,15 @@ function extractPoints(img) {
 // ---------------- CODE POINTS ----------------
 function generateCodePoints() {
   let pts = [];
-
   const fullCode = CODE_LINES.join("\n");
-  const bounds = getInnerBounds();
 
-  let cols = max(ceil(bounds.w / BASE_CHAR_WIDTH), 1);
-  let rows = max(ceil(bounds.h / BASE_LINE_HEIGHT), 1);
+  const bounds = getShapeBounds();
+
+  let scaledCharWidth = max(BASE_CHAR_WIDTH * currentShapeScale, 4);
+  let scaledLineHeight = max(BASE_LINE_HEIGHT * currentShapeScale, 6);
+
+  let cols = max(ceil(bounds.w / scaledCharWidth), 1);
+  let rows = max(ceil(bounds.h / scaledLineHeight), 1);
 
   let index = 0;
   for (let r = 0; r < rows; r++) {
