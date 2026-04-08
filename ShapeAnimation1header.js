@@ -124,8 +124,8 @@ function getShapeTargetWidth() {
   // Match actual card/iframe width, not screen width
   const cardWidth = width;
 
-  if (cardWidth >= 380) return 350;
-  if (cardWidth >= 300) return 270;
+  if (cardWidth >= 340) return 270;
+  if (cardWidth >= 260) return 220;
   return 130;
 }
 
