@@ -121,12 +121,21 @@ function preload() {
 
 // ---------------- HELPERS ----------------
 function getShapeTargetWidth() {
-  // Match actual card/iframe width, not screen width
   const cardWidth = width;
 
-  if (cardWidth >= 340) return 270;
-  if (cardWidth >= 260) return 220;
-  return 130;
+  // smooth interpolation:
+  // 260 card -> 130 shape
+  // 340 card -> 220 shape
+  // 380 card -> 270 shape
+
+  if (cardWidth <= 260) return 130;
+  if (cardWidth >= 380) return 270;
+
+  if (cardWidth < 340) {
+    return map(cardWidth, 260, 340, 130, 220);
+  }
+
+  return map(cardWidth, 340, 380, 220, 270);
 }
 
 function getShapeBounds() {
