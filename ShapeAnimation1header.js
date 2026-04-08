@@ -128,11 +128,11 @@ function getShapeTargetWidth() {
   // 340 card -> 220 shape
   // 380 card -> 270 shape
 
-  if (cardWidth <= 260) return 130;
+  if (cardWidth <= 260) return 110;
   if (cardWidth >= 380) return 270;
 
   if (cardWidth < 340) {
-    return map(cardWidth, 260, 340, 130, 220);
+    return map(cardWidth, 260, 340, 110, 220);
   }
 
   return map(cardWidth, 340, 380, 220, 270);
