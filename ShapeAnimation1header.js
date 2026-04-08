@@ -121,13 +121,12 @@ function preload() {
 
 // ---------------- HELPERS ----------------
 function getShapeTargetWidth() {
-  if (width < 820) {
-    return 140; // mobile
-  }
-  if (width < 1024) {
-    return 250; // tablet
-  }
-  return 350; // desktop
+  // Match actual card/iframe width, not screen width
+  const cardWidth = width;
+
+  if (cardWidth >= 380) return 350;
+  if (cardWidth >= 300) return 270;
+  return 130;
 }
 
 function getShapeBounds() {
@@ -178,11 +177,11 @@ function buildParticles() {
   const cx = bounds.cx;
   const cy = bounds.cy;
 
-  let total = max(codePoints.length, MIN_PARTICLES);
+  const total = max(codePoints.length, MIN_PARTICLES);
 
   for (let i = 0; i < total; i++) {
-    let sp = shapePoints[i % shapePoints.length];
-    let d = dist(sp.x, sp.y, cx, cy);
+    const sp = shapePoints[i % shapePoints.length];
+    const d = dist(sp.x, sp.y, cx, cy);
 
     particles.push({
       baseX: sp.x,
@@ -195,7 +194,9 @@ function buildParticles() {
   }
 
   const maxEdge = max(particles.map(p => p.edgeFactor)) || 1;
-  particles.forEach(p => (p.edgeFactor /= maxEdge));
+  particles.forEach(p => {
+    p.edgeFactor /= maxEdge;
+  });
 }
 
 
@@ -204,25 +205,25 @@ function draw() {
   clear();
 
   const bounds = getShapeBounds();
-  let angle = TWO_PI * currentFrame / LOOP_FRAMES;
-  let orbitRadius = min(bounds.w, bounds.h) * 0.32;
+  const angle = TWO_PI * currentFrame / LOOP_FRAMES;
+  const orbitRadius = min(bounds.w, bounds.h) * 0.32;
+  const spotX = bounds.cx + cos(angle) * orbitRadius;
+  const spotY = bounds.cy + sin(angle) * orbitRadius;
+  const scaledRadius = COLOR_RADIUS * currentShapeScale;
 
-  let spotX = bounds.cx + cos(angle) * orbitRadius;
-  let spotY = bounds.cy + sin(angle) * orbitRadius;
-  let scaledRadius = COLOR_RADIUS * currentShapeScale;
+  for (const p of particles) {
+    const breath =
+      sin(angle + p.phase) *
+      BREATH_AMPLITUDE *
+      p.edgeFactor *
+      p.strength;
 
-  for (let p of particles) {
-    let breath = sin(angle + p.phase) *
-                 BREATH_AMPLITUDE *
-                 p.edgeFactor *
-                 p.strength;
+    const a = atan2(p.baseY - bounds.cy, p.baseX - bounds.cx);
 
-    let a = atan2(p.baseY - bounds.cy, p.baseX - bounds.cx);
+    const x = p.baseX + cos(a) * breath;
+    const y = p.baseY + sin(a) * breath;
 
-    let x = p.baseX + cos(a) * breath;
-    let y = p.baseY + sin(a) * breath;
-
-    let d = dist(spotX, spotY, x, y);
+    const d = dist(spotX, spotY, x, y);
     let c = constrain(1 - d / scaledRadius, 0, 1);
     c = pow(c, 1.8);
 
@@ -242,7 +243,7 @@ function draw() {
 
 // ---------------- SHAPE POINTS ----------------
 function extractPoints(img) {
-  let pts = [];
+  const pts = [];
 
   img.loadPixels();
 
@@ -258,7 +259,7 @@ function extractPoints(img) {
 
   for (let y = 0; y < img.height; y += adaptiveDensity) {
     for (let x = 0; x < img.width; x += adaptiveDensity) {
-      let i = (floor(x) + floor(y) * img.width) * 4;
+      const i = (floor(x) + floor(y) * img.width) * 4;
 
       if (img.pixels[i + 3] > 40) {
         pts.push({
@@ -275,16 +276,15 @@ function extractPoints(img) {
 
 // ---------------- CODE POINTS ----------------
 function generateCodePoints() {
-  let pts = [];
+  const pts = [];
   const fullCode = CODE_LINES.join("\n");
-
   const bounds = getShapeBounds();
 
-  let scaledCharWidth = max(BASE_CHAR_WIDTH * currentShapeScale, 4);
-  let scaledLineHeight = max(BASE_LINE_HEIGHT * currentShapeScale, 6);
+  const scaledCharWidth = max(BASE_CHAR_WIDTH * currentShapeScale, 4);
+  const scaledLineHeight = max(BASE_LINE_HEIGHT * currentShapeScale, 6);
 
-  let cols = max(ceil(bounds.w / scaledCharWidth), 1);
-  let rows = max(ceil(bounds.h / scaledLineHeight), 1);
+  const cols = max(floor(bounds.w / scaledCharWidth), 1);
+  const rows = max(floor(bounds.h / scaledLineHeight), 1);
 
   let index = 0;
   for (let r = 0; r < rows; r++) {
